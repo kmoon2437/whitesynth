@@ -1,5 +1,5 @@
 # Insertion effect
-Insertion effect는 지정된 채널에 갖가지 이펙트(distortion,overdrive 등등등 뭐가 많음)를 넣을 수 있는 기능으로, 넣은 이펙트에 따라 정말 별의별 소리를 다 낼 수 있다. lrsynth에서는 1포트당 16개까지 사용 가능하며, 16번째 이펙터는 Roland GS sysex 로도 제어할 수 있다.
+Insertion effect는 지정된 채널에 갖가지 이펙트(distortion,overdrive 등등등 뭐가 많음)를 넣을 수 있는 기능으로, 넣은 이펙트에 따라 정말 별의별 소리를 다 낼 수 있다. whitesynth에서는 1포트당 16개까지 사용 가능하며, 16번째 이펙터는 Roland GS sysex 로도 제어할 수 있다.
 
 ## `0x24` - `0x2F` 파라미터에 대해
 `0x24` - `0x2F` 파라미터는 이펙터의 종류에 상관없이 공통으로 들어가는 파라미터이다.
@@ -16,7 +16,8 @@ Insertion effect는 지정된 채널에 갖가지 이펙트(distortion,overdrive
 | `0x2B` | EQ on/off | 0 - 127 | 0 | post-process mode에서의 EQ 사용 여부를 설정한다. pre-process와 normal mode에서는 Sysex를 통해 채널별로 설정할 수 있다. |
 | `0x2C` | (Reserved) | N/A | N/A | 추후 사용할 경우를 대비해 비워놓은 곳 |
 | : | : | : | : | : |
-| `0x2F` | (Reserved) | N/A | N/A | 추후 사용할 경우를 대비해 비워놓은 곳 |
+| `0x2E` | (Reserved) | N/A | N/A | 추후 사용할 경우를 대비해 비워놓은 곳 |
+| `0x2F` | Insertion effects off | (값 없음) | (값 없음) | 모든 채널에 대해 이 insertion effect를 끈다. 파라미터 이름을 뭘로 정할지 모르겠어서 이렇게 했다. |
 
 ### `0x27` 파라미터에 대해
 값이 0인 경우는 pre-process mode에 해당하며, volume 처리와 filter(cutoff: `CC#74`,resonance: `CC#71`) 처리 이전에 이펙트를 먼저 처리한다.

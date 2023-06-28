@@ -8,7 +8,7 @@ F0 7D 10 0B 15 rr rr rr rr vv ... F7
 - `F0` = 이 메세지가 sysex 메세지임을 의미함
 - `7D` = 제조사(manufacturer: 생산자) ID (테스트용) (자세한 것은 [여기](./sysexManufacturerId.md) 참조)
 - `10` = Device ID (사실상 무쓸모지만 가급적 `10`으로 놔둘 것을 권장)
-- `0B 15` = Model ID (lrsynth)
+- `0B 15` = Model ID (whitesynth)
 - `rr rr rr rr` = 파라미터 번호
 - `vv ...` = 데이터(길이는 1바이트일 수도 있고 더 길 수도 있음)
 - `F7` = sysex의 끝
@@ -85,14 +85,15 @@ cent 단위로 전체 음정을 조율한다. 1키 = 100cent이다.
 - 기본값: Center
 
 ### 기본 이펙트 관련 설정
+이 부분은 확정된 것이 아니며, 변경될 수 있다.
 
-#### Remove reverberation - `11 00 00 00`
+<!--#### Remove reverberation - `11 00 00 00`
 reverb/delay 이펙트로 인해 volume을 줄이거나 all sound off를 해도 잔향이 남는 경우가 있는데, 이러한 잔향을 깔끔히 없앤다.
 synth 구조상 이걸 채널별로 하는 것은 불가능하다.
 
 - 값 형태: `0000 0000`
 - 값: 0 (`0x00`)
-- 기본값: 없음
+- 기본값: 없음 -->
 
 #### Reverb preset - `11 00 01 00`
 이걸 설정하면 나머지 reverb 파라미터들이 자동으로 맞춰진다.
@@ -130,27 +131,20 @@ reverb 출력음의 level을 설정한다.
 - 기본값: 64
 
 #### Reverb time - `11 00 01 05`
-reverb 이펙트에서 소리가 울리는 시간을 설정한다.
+reverb 이펙트로 인해 잔향이 남는 시간을 설정한다.
 
 - 값 형태: `0kkk kkkk`
 - 값: 0 - 127
 - 기본값: 64
 
-#### Reverb delay on/off - `11 00 01 06`
-reverb 이펙트에서 delay(echo비슷한거)를 사용할지 여부를 설정한다.
-
-- 값 형태: `0kkk kkkk`
-- 값: off(0),on(1)
-- 기본값: off
-
-#### Reverb delay feedback - `11 00 01 07`
+#### Reverb delay feedback - `11 00 01 06`
 reverb 이펙트에서 delay로 인해 소리가 울리는 횟수를 지정한다.
 
 - 값 형태: `0kkk kkkk`
 - 값: 0 - 127
 - 기본값: 0
 
-#### Reverb pre-delay time - `11 00 01 08`
+#### Reverb pre-delay time - `11 00 01 07`
 reverb 이펙트에서 소리가 울리기 시작하는 시간을 설정한다.
 
 - 값 형태: `0kkk kkkk`
