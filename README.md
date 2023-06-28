@@ -19,4 +19,4 @@ soundfont 기반 소프트웨어 미디음원 라이브러리
 ## 기타
 - 「SoundFont」는 E-mu Systems, Inc. 사가 등록한 상표다.
 - 「Roland」,「GS」(**G**eneral **S**tandard),「Sound Canvas」는 Roland 사가 등록한 상표다.
-  - 졸라 웃기게도, **「EFX」도 Roland 사가 등록한 상표다!**
+  - 웃기는 사실은 **「EFX」도 Roland 사가 등록한 상표라는 것이다!**
