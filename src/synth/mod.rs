@@ -4,5 +4,5 @@ pub mod effects;
 use settings::SynthSettings;
 
 pub struct Synth{
-    settings:SynthSettings
+    pub settings:SynthSettings
 }

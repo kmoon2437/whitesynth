@@ -1,30 +1,29 @@
 /**
  * 샘플 하나에 오디오 필터 적용
- * 스테레오는 좌/우를 각각 따로 하면 됨
- * 알고리즘에 대해서는
- * https://www.utsbox.com/?page_id=523 참조
+ * 스테레오는 좌/우를 각각 따로 하면 됨(밑에 있음)
+ * 참고문헌: https://www.utsbox.com/?page_id=523
  */
 use std::f64::consts::PI; // 무빙에서 김봉석이 매번 외우는 그거
-const LN_2:f64 = 0.69314718055994528622676398299518041312694549560546875; // ln 2 (2의 자연로그 값)
+use std::f64::consts::LN_2; // 2의 자연로그 값
 
 pub struct Filter{
     // filter 처리 관련 변수
     // 필터의 종류, frequency 등 각종 파라미터에 따라 변화
-    pub a0:f64,
-    pub a1:f64,
-    pub a2:f64,
-    pub b0:f64,
-    pub b1:f64,
-    pub b2:f64,
+    a0:f64,
+    a1:f64,
+    a2:f64,
+    b0:f64,
+    b1:f64,
+    b2:f64,
 
     // 이전 입/출력
-    pub input1:f64,
-    pub input2:f64,
-    pub output1:f64,
-    pub output2:f64,
+    input1:f64,
+    input2:f64,
+    output1:f64,
+    output2:f64,
 
     // 초당 샘플 수
-    pub sample_rate:f64
+    sample_rate:f64
 }
 
 impl Filter{
@@ -97,7 +96,7 @@ impl Filter{
         self.b1 = -b;
         self.b2 = b/2.0;
     }
-    
+
     /**
      * freq = cutoff 주파수
      * bw = 대역폭 범위 (옥타브 단위)
@@ -112,5 +111,41 @@ impl Filter{
         self.b0 = alpha;
         self.b1 = 0.0;
         self.b2 = -alpha;
+    }
+}
+
+pub struct StereoFilter{
+    processor_l:Filter,
+    processor_r:Filter
+}
+
+impl StereoFilter{
+    pub fn new(sample_rate:f64) -> Self{
+        return Self{
+            processor_l:Filter::new(sample_rate),
+            processor_r:Filter::new(sample_rate)
+        };
+    }
+    
+    pub fn process(&mut self,input_l:f64,input_r:f64) -> (f64,f64){
+        return (
+            self.processor_l.process(input_l),
+            self.processor_r.process(input_r)
+        );
+    }
+    
+    pub fn low_pass(&mut self,freq:f64,q:f64){
+        self.processor_l.low_pass(freq,q);
+        self.processor_r.low_pass(freq,q);
+    }
+    
+    pub fn high_pass(&mut self,freq:f64,q:f64){
+        self.processor_l.high_pass(freq,q);
+        self.processor_r.high_pass(freq,q);
+    }
+    
+    pub fn band_pass(&mut self,freq:f64,bw:f64){
+        self.processor_l.band_pass(freq,bw);
+        self.processor_r.band_pass(freq,bw);
     }
 }

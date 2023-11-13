@@ -23,14 +23,14 @@ use log4rs::{
 use chrono::offset::Local;
 
 // 실제 synth 관련
-use whitesynth::util;
-use whitesynth::synth::effects::filter::Filter;
+//use whitesynth::synth::effects::envelope::Envelope;
+//use whitesynth::synth::effects::compressor::Compressor;
+use whitesynth::synth::effects::delay::Delay;
 
 // 테스트용
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
-use std::convert::TryInto;
 
 fn init_logger(verbose: bool) -> log4rs::Handle {
     let file_log_pattern = "{d(%Y-%m-%d %H:%M:%S %Z)} [{l}] {m}{n}";
@@ -83,14 +83,23 @@ fn main(){
     let len = buf.len()/(2*2); // 채널 2개, signed 16비트 샘플, 초당 샘플 수 48000
     log::info!("len: {}",len);
 
+    let mut processorL = Delay::new(48000.0);
+    let mut processorR = Delay::new(48000.0);
+    /*
+    let mut processorL = Compressor::new(48000.0);
+    let mut processorR = Compressor::new(48000.0);
+    let mut processorL = Envelope::new_with_params(48000.0,6000.0,250.0,4000.0,0.3,2000.0);
+    let mut processorR = Envelope::new_with_params(48000.0,6000.0,250.0,4000.0,0.3,2000.0);
+
     let mut processorL = Filter::new(48000.0);
     let mut processorR = Filter::new(48000.0);
-    let q = (std::f64::consts::PI/4.0).sin();
+    let q = 1.0/((2.0_f64).sqrt());
 
     // low-pass filter(저음역대만 통과)
     let freq = 440.0;
     processorL.low_pass(freq,q);
     processorR.low_pass(freq,q);
+    */
 
     // high-pass filter(고음역대만 통과)
     /*let freq = 1972.0;
@@ -112,7 +121,13 @@ fn main(){
             //println!("{} {} {}",i,o_left,o_right);
             log::debug!("{} {} {}",i,o_left,o_right);
         }
-        newFile.write_all(&(o_left.to_le_bytes()));
-        newFile.write_all(&(o_right.to_le_bytes()));
+        // 20초째가 되면 release
+        /*if ii == 960000 {
+            processorL.release();
+            processorR.release();
+        }*/
+        newFile.write_all(&(o_left.to_le_bytes())).unwrap();
+        newFile.write_all(&(o_right.to_le_bytes())).unwrap();
     }
+    log::info!("completed");
 }
