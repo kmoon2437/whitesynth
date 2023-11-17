@@ -22,17 +22,11 @@ use log4rs::{
 };
 use chrono::offset::Local;
 
-// 실제 synth 관련
-//use whitesynth::synth::effects::envelope::Envelope;
-//use whitesynth::synth::effects::compressor::Compressor;
-use whitesynth::synth::effects::delay::Delay;
-
 // 테스트용
 use std::fs::File;
-use std::io::Read;
-use std::io::Write;
+use whitesynth::soundbank::sf2::SF2;
 
-fn init_logger(verbose: bool) -> log4rs::Handle {
+fn init_logger(verbose: bool) -> Result<log4rs::Handle,Box<dyn std::error::Error>>{
     let file_log_pattern = "{d(%Y-%m-%d %H:%M:%S %Z)} [{l}] {m}{n}";
     let console_log_pattern = "{d(%Y-%m-%d %H:%M:%S)} [{l}] {m}{n}";
     let date = Local::now().format("%Y-%m-%d_%H-%M-%S").to_string();
@@ -43,14 +37,12 @@ fn init_logger(verbose: bool) -> log4rs::Handle {
 
     let file = FileAppender::builder()
     .encoder(Box::new(PatternEncoder::new(file_log_pattern)))
-    .build(format!("log/{}.log",date))
-    .unwrap();
+    .build(format!("log/{}.log",date))?;
 
     let latest_log_file = FileAppender::builder()
     .append(false)
     .encoder(Box::new(PatternEncoder::new(file_log_pattern)))
-    .build("log/latest.log")
-    .unwrap();
+    .build("log/latest.log")?;
 
     let console_log_filter = ThresholdFilter::new(if verbose { log::LevelFilter::Trace }else{ log::LevelFilter::Info });
     let config = Config::builder()
@@ -61,73 +53,29 @@ fn init_logger(verbose: bool) -> log4rs::Handle {
         .appender("file")
         .appender("latestLogFile")
         .appender("console")
-        .build(log::LevelFilter::Trace))
-    .unwrap();
+        .build(log::LevelFilter::Trace))?;
     
-    return log4rs::init_config(config).unwrap();
+    return Ok(log4rs::init_config(config)?);
 }
 
-fn slice2array(slice: &[u8]) -> [u8;2]{
-    return [slice[0],slice[1]];
-}
-
-fn main(){
-    //log4rs::init_file("log4rs.yml",Default::default()).unwrap();
-    let _handle = init_logger(false);
+fn main() -> Result<(),Box<dyn std::error::Error>>{
+    let _handle = init_logger(false)?;
 
     let args:Vec<String> = std::env::args().collect();
-    log::info!("args: {} {}",&args[1],&args[2]);
-    let mut file = File::open(&args[1]).unwrap();
-    let mut buf:Vec<u8> = vec![];
-    file.read_to_end(&mut buf).unwrap();
-    let len = buf.len()/(2*2); // 채널 2개, signed 16비트 샘플, 초당 샘플 수 48000
-    log::info!("len: {}",len);
+    log::info!("args: {}",&args[1]);
+    let mut file = File::open(&args[1])?;
+    let sf = SF2::new(&mut file)?;
+    log::info!("Soundfont version: {}.{}",sf.info.sf_version[0],sf.info.sf_version[1]);
+    log::info!("Target sound engine: {}",sf.info.target_sound_engine);
+    log::info!("Soundfont name: {}",sf.info.bank_name);
+    log::info!("ROM name: {}",sf.info.rom_name);
+    log::info!("ROM version: {}.{}",sf.info.rom_version[0],sf.info.rom_version[1]);
+    log::info!("Created at: {}",sf.info.created_date);
+    log::info!("Engineers: {}",sf.info.engineers);
+    log::info!("Target hardware: {}",sf.info.target_hardware);
+    log::info!("Copyright: {}",sf.info.copyright);
+    log::info!("Created with: {}",sf.info.created_software);
+    log::info!("Comments: {}",sf.info.comments);
 
-    let mut processorL = Delay::new(48000.0);
-    let mut processorR = Delay::new(48000.0);
-    /*
-    let mut processorL = Compressor::new(48000.0);
-    let mut processorR = Compressor::new(48000.0);
-    let mut processorL = Envelope::new_with_params(48000.0,6000.0,250.0,4000.0,0.3,2000.0);
-    let mut processorR = Envelope::new_with_params(48000.0,6000.0,250.0,4000.0,0.3,2000.0);
-
-    let mut processorL = Filter::new(48000.0);
-    let mut processorR = Filter::new(48000.0);
-    let q = 1.0/((2.0_f64).sqrt());
-
-    // low-pass filter(저음역대만 통과)
-    let freq = 440.0;
-    processorL.low_pass(freq,q);
-    processorR.low_pass(freq,q);
-    */
-
-    // high-pass filter(고음역대만 통과)
-    /*let freq = 1972.0;
-    processorL.high_pass(freq,q);
-    processorR.high_pass(freq,q);*/
-
-    let mut newFile = File::create(&args[2]).unwrap();
-    for ii in 0..len{
-        let i = ii*4;
-        let left = i16::from_le_bytes(slice2array(&buf[i..=(i+1)]));
-        let right = i16::from_le_bytes(slice2array(&buf[(i+2)..=(i+3)]));
-        let left_f = (left as f64) / (if left < 0 { 32768.0 }else{ 32767.0 });
-        let right_f = (right as f64) / (if right < 0 { 32768.0 }else{ 32767.0 });
-        let o_left_f = processorL.process(left_f);
-        let o_right_f = processorR.process(right_f);
-        let o_left = (o_left_f / 1.0 * (if o_left_f < 0.0 { 32768.0 }else{ 32767.0 })) as i16;
-        let o_right = (o_right_f / 1.0 * (if o_right_f < 0.0 { 32768.0 }else{ 32767.0 })) as i16;
-        if ii % 480000 == 0 {
-            //println!("{} {} {}",i,o_left,o_right);
-            log::debug!("{} {} {}",i,o_left,o_right);
-        }
-        // 20초째가 되면 release
-        /*if ii == 960000 {
-            processorL.release();
-            processorR.release();
-        }*/
-        newFile.write_all(&(o_left.to_le_bytes())).unwrap();
-        newFile.write_all(&(o_right.to_le_bytes())).unwrap();
-    }
-    log::info!("completed");
+    return Ok(());
 }
