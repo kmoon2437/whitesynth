@@ -1,6 +1,6 @@
 /**
  * 사운드폰트 파일(sf2)
- * 정말 상상 이상으로 복잡하다
+ * 오래된 파일 형식이라 그런지 최대한 단순하게 만든 느낌이다
  * 참고문헌: https://www.utsbox.com/?p=2068
  * 그리고 저기서 이어지는 모든 글들
  */
@@ -54,10 +54,13 @@ pub struct SF2SampleHeader{
 }
 
 pub struct SF2Bag{
-    pub generator_index:u16,
-    pub modulator_index:u16
+    pub generator_start:u16,
+    pub generator_end:u16,
+    pub modulator_start:u16,
+    pub modulator_end:u16
 }
 
+#[derive(Copy,Clone)]
 pub struct SF2Modulator{
     pub src_operator:u16,
     pub dest_operator:u16,
@@ -66,6 +69,7 @@ pub struct SF2Modulator{
     pub mod_trans_operator:u16
 }
 
+#[derive(Copy,Clone)]
 pub struct SF2Generator{
     pub operator:u16,
     pub amount:i16
@@ -88,7 +92,7 @@ impl SF2Zone{
 pub struct SF2Instrument{
     pub name:String,
     pub ibag_index:u16,
-    pub zone:SF2Zone
+    pub zones:Vec<SF2Zone>
 }
 
 pub struct SF2Preset{
@@ -96,7 +100,7 @@ pub struct SF2Preset{
     pub program_no:u16,
     pub bank:u16,
     pub pbag_index:u16,
-    pub zone:SF2Zone,
+    pub zones:Vec<SF2Zone>,
     pub library:u32,
     pub genre:u32,
     pub morph:u32
@@ -304,9 +308,16 @@ impl SF2{
         for ii in 0..inst_bags_len {
             let i = ii * 4;
             inst_bags.push(SF2Bag{
-                generator_index:u16::from_le_bytes(ibag[i..=(i+1)].try_into()?),
-                modulator_index:u16::from_le_bytes(ibag[(i+2)..=(i+3)].try_into()?),
+                generator_start:u16::from_le_bytes(ibag[i..=(i+1)].try_into()?),
+                generator_end:0,
+                modulator_start:u16::from_le_bytes(ibag[(i+2)..=(i+3)].try_into()?),
+                modulator_end:0
             });
+        }
+
+        for i in 0..inst_bags_len {
+            inst_bags[i].generator_end = if i == inst_bags_len { inst_generators_len as u16 }else{ inst_bags[i+1].generator_start-1 };
+            inst_bags[i].modulator_end = if i == inst_bags_len { inst_modulators_len as u16 }else{ inst_bags[i+1].modulator_start-1 };
         }
 
         let instruments_len = inst.len() / 22;
@@ -322,9 +333,24 @@ impl SF2{
             let instrument = SF2Instrument{
                 name:String::from_utf8(inst[i..=(i+end_of_name)].try_into()?)?,
                 ibag_index:u16::from_le_bytes(phdr[(i+20)..=(i+21)].try_into()?),
-                zone:SF2Zone::new()
+                zones:vec![]
             };
             instruments.push(instrument);
+        }
+
+        for i in 0..instruments_len {
+            let ibag_start = instruments[i].ibag_index as usize;
+            let ibag_end = if i == instruments_len { inst_bags_len }else{ (instruments[i+1].ibag_index-1) as usize };
+            for j in ibag_start..=ibag_end {
+                let mut zone = SF2Zone::new();
+                for k in (inst_bags[j].generator_start as usize)..=(inst_bags[j].generator_end as usize) {
+                    zone.generators.push(inst_zone.generators[k]);
+                }
+                for k in (inst_bags[j].modulator_start as usize)..=(inst_bags[j].modulator_end as usize) {
+                    zone.modulators.push(inst_zone.modulators[k]);
+                }
+                instruments[i].zones.push(zone);
+            }
         }
 
         let preset_generators_len = pgen.len() / 4;
@@ -352,9 +378,16 @@ impl SF2{
         for ii in 0..preset_bags_len {
             let i = ii * 4;
             preset_bags.push(SF2Bag{
-                generator_index:u16::from_le_bytes(pbag[i..=(i+1)].try_into()?),
-                modulator_index:u16::from_le_bytes(pbag[(i+2)..=(i+3)].try_into()?),
+                generator_start:u16::from_le_bytes(pbag[i..=(i+1)].try_into()?),
+                generator_end:0,
+                modulator_start:u16::from_le_bytes(pbag[(i+2)..=(i+3)].try_into()?),
+                modulator_end:0
             });
+        }
+
+        for i in 0..preset_bags_len {
+            preset_bags[i].generator_end = if i == preset_bags_len { preset_generators_len as u16 }else{ preset_bags[i+1].generator_start-1 };
+            preset_bags[i].modulator_end = if i == preset_bags_len { preset_modulators_len as u16 }else{ preset_bags[i+1].modulator_start-1 };
         }
 
         let presets_len = phdr.len() / 38;
@@ -372,12 +405,27 @@ impl SF2{
                 program_no:u16::from_le_bytes(phdr[(i+20)..=(i+21)].try_into()?),
                 bank:u16::from_le_bytes(phdr[(i+22)..=(i+23)].try_into()?),
                 pbag_index:u16::from_le_bytes(phdr[(i+24)..=(i+25)].try_into()?),
-                zone:SF2Zone::new(),
+                zones:vec![],
                 library:u32::from_le_bytes(phdr[(i+26)..=(i+29)].try_into()?),
                 genre:u32::from_le_bytes(phdr[(i+30)..=(i+33)].try_into()?),
                 morph:u32::from_le_bytes(phdr[(i+34)..=(i+37)].try_into()?),
             };
             presets.push(preset);
+        }
+
+        for i in 0..presets_len {
+            let pbag_start = presets[i].pbag_index as usize;
+            let pbag_end = if i == presets_len { preset_bags_len }else{ (presets[i+1].pbag_index-1) as usize };
+            for j in pbag_start..=pbag_end {
+                let mut zone = SF2Zone::new();
+                for k in (preset_bags[j].generator_start as usize)..=(preset_bags[j].generator_end as usize) {
+                    zone.generators.push(preset_zone.generators[k]);
+                }
+                for k in (preset_bags[j].modulator_start as usize)..=(preset_bags[j].modulator_end as usize) {
+                    zone.modulators.push(preset_zone.modulators[k]);
+                }
+                presets[i].zones.push(zone);
+            }
         }
 
         return Ok(Self{
