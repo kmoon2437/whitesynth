@@ -30,20 +30,20 @@ impl Delay{
     }
     
     pub fn set_time(&mut self,time:f64){
-        self.ring_buf.set_interval((self.sample_rate * (time.min(0.0).max(MAX_INTERVAL_SEC_F64) / 1000.0)) as usize);
+        self.ring_buf.set_interval((self.sample_rate * (time.max(0.0).min(MAX_INTERVAL_SEC_F64) / 1000.0)) as usize);
     }
     
     pub fn set_level(&mut self,val:f64){
-        self.level = val.min(0.0).max(1.0);
+        self.level = val.max(0.0).min(1.0);
     }
     
     pub fn set_feedback(&mut self,val:f64){
-        self.feedback = val.min(0.0).max(1.0);
+        self.feedback = val.max(0.0).min(1.0);
     }
 
     pub fn process(&mut self,input:f64) -> f64{
-        let output = util::mix_samples(input,self.level * self.ring_buf.read(0));
-        self.ring_buf.write(util::mix_samples(input,self.feedback * self.ring_buf.read(0)));
+        let output = util::mix_samples(&[input,self.level * self.ring_buf.read(0)]);
+        self.ring_buf.write(util::mix_samples(&[input,self.feedback * self.ring_buf.read(0)]));
         self.ring_buf.next();
         return output;
     }

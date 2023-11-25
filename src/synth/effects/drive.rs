@@ -32,15 +32,15 @@ impl Drive{
     }
 
     pub fn set_drive(&mut self,val:f64){
-        self.drive = val.min(0.0);
+        self.drive = val.max(0.0);
     }
 
     pub fn set_volume(&mut self,val:f64){
-        self.volume = val.min(0.0).max(1.0);
+        self.volume = val.max(0.0).min(1.0);
     }
 
     pub fn process(&mut self,input:f64) -> f64{
         let tmp = self.hpf.process(input)*self.drive;
-        return tmp.min(-1.0).max(1.0)*self.volume;
+        return tmp.max(-1.0).min(1.0)*self.volume;
     }
 }

@@ -72,23 +72,23 @@ impl Envelope{
     }
     
     pub fn set_attack_time(&mut self,val:f64){
-        self.attack_time = val.min(0.0);
+        self.attack_time = val.max(0.0);
     }
 
     pub fn set_hold_time(&mut self,val:f64){
-        self.hold_time = val.min(0.0);
+        self.hold_time = val.max(0.0);
     }
 
     pub fn set_decay_time(&mut self,val:f64){
-        self.decay_time = val.min(0.0);
+        self.decay_time = val.max(0.0);
     }
 
     pub fn set_sustain_level(&mut self,val:f64){
-        self.sustain_level = val.min(0.0).max(1.0);
+        self.sustain_level = val.max(0.0).min(1.0);
     }
     
     pub fn set_release_time(&mut self,val:f64){
-        self.release_time = val.min(0.0);
+        self.release_time = val.max(0.0);
     }
 
     pub fn process(&mut self,input:f64) -> f64{

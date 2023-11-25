@@ -24,15 +24,15 @@ impl Compressor{
     }
 
     pub fn set_threshold(&mut self,val:f64){
-        self.threshold = val.min(0.0);
+        self.threshold = val.max(0.0);
     }
 
     pub fn set_ratio(&mut self,val:f64){
-        self.ratio = val.min(0.0);
+        self.ratio = val.max(0.0);
     }
 
     pub fn set_makeup_gain(&mut self,val:f64){
-        self.makeup_gain = val.min(0.0);
+        self.makeup_gain = val.max(0.0);
     }
     
     pub fn process(&mut self,input:f64) -> f64{
