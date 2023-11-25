@@ -20,10 +20,10 @@ pub struct LFO{
 
 impl LFO{
     pub fn new(sample_rate:f64) -> Self{
-        let lfo = Self{
+        let mut lfo = Self{
             sample_rate:sample_rate,
             frequency:0.0,
-            frequency:0.0,
+            period:0.0,
             tick:-1.0
         };
         lfo.set_frequency(440.0);
@@ -40,20 +40,20 @@ impl LFO{
         return self.tick;
     }
 
-    pub fn sine(&mut self){
-        return (2*PI*self.next_tick()/self.period).sin();
+    pub fn sine(&mut self) -> f64{
+        return (2.0*PI*self.next_tick()/self.period).sin();
     }
 
-    pub fn sawtooth(&mut self){
+    pub fn sawtooth(&mut self) -> f64{
         let tick = self.next_tick()/self.period;
-        return 2*(tick - tick.round());
+        return 2.0*(tick - tick.round());
     }
 
-    pub fn square(&mut self){
+    pub fn square(&mut self) -> f64{
         return 1.0_f64.powf(self.next_tick()/self.period);
     }
 
-    pub fn triangle(&mut self){
+    pub fn triangle(&mut self) -> f64{
         return self.sine().asin();
     }
 }
