@@ -1,8 +1,8 @@
 pub mod settings;
 pub mod effects;
 
-use settings::SynthSettings;
+use crate::soundbank::sf2::SF2;
 
 pub struct Synth{
-    pub settings:SynthSettings
+    pub soundfonts:Vec<SF2>
 }
