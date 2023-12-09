@@ -5,6 +5,7 @@
  * 그리고 저기서 이어지는 모든 글들
  */
 use std::convert::TryInto;
+use crate::util;
 
 pub struct SF2Info{
     pub sf_version:[u16;2], // ifil
@@ -54,8 +55,10 @@ pub struct SF2SampleHeader{
 }
 
 pub struct SF2Bag{
+    pub is_generator:bool,
     pub generator_start:u16,
     pub generator_end:u16,
+    pub is_modulator:bool,
     pub modulator_start:u16,
     pub modulator_end:u16
 }
@@ -138,8 +141,8 @@ pub struct SF2{
 impl SF2{
     pub fn new<T:std::io::Read + std::io::Seek>(data:&mut T) -> Result<Self,Box<dyn std::error::Error>>{
         let riff_data = riff::Chunk::read(data,0)?;
-        let mut sample_data:Vec<u8> = vec![];
-        let mut sm24_data:Vec<u8> = vec![];
+        let mut smpl:Vec<u8> = vec![];
+        let mut sm24:Vec<u8> = vec![];
         let mut shdr:Vec<u8> = vec![];
         let mut phdr:Vec<u8> = vec![];
         let mut pbag:Vec<u8> = vec![];
@@ -158,10 +161,10 @@ impl SF2{
         let mut preset_bags:Vec<SF2Bag> = vec![];
         let mut presets:Vec<SF2Preset> = vec![];
 
-        let lists:Vec<_> = riff_data.iter(data).map(|a| a.unwrap()).collect();
+        let lists:Vec<_> = util::unwrap_result_iter(riff_data.iter(data))?;
         for child in lists.iter() {
             let child_type = child.read_type(data)?.as_str().to_string();
-            let chunks:Vec<_> = child.iter(data).map(|a| a.unwrap()).collect();
+            let chunks:Vec<_> = util::unwrap_result_iter(child.iter(data))?;
             for chunk in chunks.iter() {
                 if child_type == "INFO" {
                     match chunk.id().as_str() {
@@ -191,8 +194,8 @@ impl SF2{
                 }else if child_type == "sdta" {
                     let contents = chunk.read_contents(data)?;
                     match chunk.id().as_str() {
-                        "smpl" => sample_data = contents,
-                        "sm24" => sm24_data = contents,
+                        "smpl" => smpl = contents,
+                        "sm24" => sm24 = contents,
                         &_ => {}
                     }
                 }else if child_type == "pdta" {
@@ -308,16 +311,27 @@ impl SF2{
         for ii in 0..inst_bags_len {
             let i = ii * 4;
             inst_bags.push(SF2Bag{
+                is_generator:true,
                 generator_start:u16::from_le_bytes(ibag[i..=(i+1)].try_into()?),
                 generator_end:0,
+                is_modulator:true,
                 modulator_start:u16::from_le_bytes(ibag[(i+2)..=(i+3)].try_into()?),
                 modulator_end:0
             });
         }
 
         for i in 0..inst_bags_len {
-            inst_bags[i].generator_end = if i == inst_bags_len { inst_generators_len as u16 }else{ inst_bags[i+1].generator_start-1 };
-            inst_bags[i].modulator_end = if i == inst_bags_len { inst_modulators_len as u16 }else{ inst_bags[i+1].modulator_start-1 };
+            inst_bags[i].generator_end = if i == inst_bags_len-1 {
+                (inst_generators_len-1) as u16
+            }else if inst_bags[i+1].generator_start > inst_bags[i].generator_start {
+                inst_bags[i+1].generator_start-1
+            }else{ inst_bags[i].is_generator = false; 0 };
+            
+            inst_bags[i].modulator_end = if i == inst_bags_len-1 {
+                (inst_modulators_len-1) as u16
+            }else if inst_bags[i+1].modulator_start > inst_bags[i].modulator_start {
+                inst_bags[i+1].modulator_start-1
+            }else{ inst_bags[i].is_modulator = false; 0 };
         }
 
         let instruments_len = inst.len() / 22;
@@ -332,22 +346,34 @@ impl SF2{
             }
             let instrument = SF2Instrument{
                 name:String::from_utf8(inst[i..=(i+end_of_name)].try_into()?)?,
-                ibag_index:u16::from_le_bytes(phdr[(i+20)..=(i+21)].try_into()?),
+                ibag_index:u16::from_le_bytes(inst[(i+20)..=(i+21)].try_into()?),
                 zones:vec![]
             };
             instruments.push(instrument);
         }
 
         for i in 0..instruments_len {
+            let mut is_ibag = true;
             let ibag_start = instruments[i].ibag_index as usize;
-            let ibag_end = if i == instruments_len { inst_bags_len }else{ (instruments[i+1].ibag_index-1) as usize };
+            let ibag_end = if i == instruments_len-1 {
+                inst_bags_len-1
+            }else if instruments[i+1].ibag_index > ibag_start as u16 {
+                (instruments[i+1].ibag_index-1) as usize
+            }else{ is_ibag = false; 0 };
+            
+            if !is_ibag { continue; }
+
             for j in ibag_start..=ibag_end {
                 let mut zone = SF2Zone::new();
-                for k in (inst_bags[j].generator_start as usize)..=(inst_bags[j].generator_end as usize) {
-                    zone.generators.push(inst_zone.generators[k]);
+                if inst_bags[j].is_generator {
+                    for k in (inst_bags[j].generator_start as usize)..=(inst_bags[j].generator_end as usize) {
+                        zone.generators.push(inst_zone.generators[k]);
+                    }
                 }
-                for k in (inst_bags[j].modulator_start as usize)..=(inst_bags[j].modulator_end as usize) {
-                    zone.modulators.push(inst_zone.modulators[k]);
+                if inst_bags[j].is_modulator {
+                    for k in (inst_bags[j].modulator_start as usize)..=(inst_bags[j].modulator_end as usize) {
+                        zone.modulators.push(inst_zone.modulators[k]);
+                    }
                 }
                 instruments[i].zones.push(zone);
             }
@@ -378,16 +404,27 @@ impl SF2{
         for ii in 0..preset_bags_len {
             let i = ii * 4;
             preset_bags.push(SF2Bag{
+                is_generator:true,
                 generator_start:u16::from_le_bytes(pbag[i..=(i+1)].try_into()?),
                 generator_end:0,
+                is_modulator:true,
                 modulator_start:u16::from_le_bytes(pbag[(i+2)..=(i+3)].try_into()?),
                 modulator_end:0
             });
         }
 
         for i in 0..preset_bags_len {
-            preset_bags[i].generator_end = if i == preset_bags_len { preset_generators_len as u16 }else{ preset_bags[i+1].generator_start-1 };
-            preset_bags[i].modulator_end = if i == preset_bags_len { preset_modulators_len as u16 }else{ preset_bags[i+1].modulator_start-1 };
+            preset_bags[i].generator_end = if i == preset_bags_len-1 {
+                (preset_generators_len-1) as u16
+            }else if preset_bags[i+1].generator_start > preset_bags[i].generator_start {
+                preset_bags[i+1].generator_start-1
+            }else{ preset_bags[i].is_generator = false; 0 };
+            
+            preset_bags[i].modulator_end = if i == preset_bags_len-1 {
+                (preset_modulators_len-1) as u16
+            }else if preset_bags[i+1].modulator_start > preset_bags[i].modulator_start {
+                preset_bags[i+1].modulator_start-1
+            }else{ preset_bags[i].is_modulator = false; 0 };
         }
 
         let presets_len = phdr.len() / 38;
@@ -414,15 +451,27 @@ impl SF2{
         }
 
         for i in 0..presets_len {
+            let mut is_pbag = true;
             let pbag_start = presets[i].pbag_index as usize;
-            let pbag_end = if i == presets_len { preset_bags_len }else{ (presets[i+1].pbag_index-1) as usize };
+            let pbag_end = if i == presets_len-1 {
+                preset_bags_len-1
+            }else if presets[i+1].pbag_index > pbag_start as u16 {
+                (presets[i+1].pbag_index-1) as usize
+            }else{ is_pbag = false; 0 };
+            
+            if !is_pbag { continue; };
+
             for j in pbag_start..=pbag_end {
                 let mut zone = SF2Zone::new();
-                for k in (preset_bags[j].generator_start as usize)..=(preset_bags[j].generator_end as usize) {
-                    zone.generators.push(preset_zone.generators[k]);
+                if preset_bags[j].is_generator {
+                    for k in (preset_bags[j].generator_start as usize)..=(preset_bags[j].generator_end as usize) {
+                        zone.generators.push(preset_zone.generators[k]);
+                    }
                 }
-                for k in (preset_bags[j].modulator_start as usize)..=(preset_bags[j].modulator_end as usize) {
-                    zone.modulators.push(preset_zone.modulators[k]);
+                if preset_bags[j].is_modulator {
+                    for k in (preset_bags[j].modulator_start as usize)..=(preset_bags[j].modulator_end as usize) {
+                        zone.modulators.push(preset_zone.modulators[k]);
+                    }
                 }
                 presets[i].zones.push(zone);
             }
@@ -431,8 +480,8 @@ impl SF2{
         return Ok(Self{
             info:info,
             sample_headers:sample_headers,
-            sample_data:sample_data,
-            sm24_data:sm24_data,
+            sample_data:smpl,
+            sm24_data:sm24,
             instruments:instruments,
             presets:presets
         });
