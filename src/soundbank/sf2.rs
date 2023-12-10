@@ -83,6 +83,7 @@ pub struct SF2Zone{
     pub generators:Vec<SF2Generator>
 }
 
+
 impl SF2Zone{
     fn new() -> Self{
         return Self{
@@ -130,19 +131,34 @@ impl std::fmt::Display for SF2Error{
 }
 
 pub struct SF2{
+    // 사운드폰트 파일 정보
     pub info:SF2Info,
+    
+    // 사운드폰트 파일에 있는 모든 샘플의 정보
     pub sample_headers:Vec<SF2SampleHeader>,
-    pub sample_data:Vec<u8>,
-    pub sm24_data:Vec<u8>,
+
+    // 샘플 청크 개체
+    // 이것을 통해 샘플 데이터를 동적으로 로드할 수 있다
+    pub smpl_chunk:Option<riff::Chunk>,
+    pub sm24_chunk:Option<riff::Chunk>,
+
+    // 전체 샘플 데이터를 통째로 로드하는 경우의 샘플 데이터
+    // 사실 f64를 쓰고 싶었지만 메모리를 아끼기 위해 이 부분은 f32 타입으로 저장
+    pub samples:Option<Vec<f32>>,
+
+    // 악기(instrument) 데이터
     pub instruments:Vec<SF2Instrument>,
+
+    // 프리셋(preset) 데이터
+    // program 번호와 bank select 번호가 지정되어 있다
     pub presets:Vec<SF2Preset>
 }
 
 impl SF2{
-    pub fn new<T:std::io::Read + std::io::Seek>(data:&mut T) -> Result<Self,Box<dyn std::error::Error>>{
-        let riff_data = riff::Chunk::read(data,0)?;
-        let mut smpl:Vec<u8> = vec![];
-        let mut sm24:Vec<u8> = vec![];
+    pub fn new<T:std::io::Read + std::io::Seek>(stream:&mut T) -> Result<Self,Box<dyn std::error::Error>>{
+        let riff_data = riff::Chunk::read(stream,0)?;
+        let mut smpl_chunk:Option<riff::Chunk> = None;
+        let mut sm24_chunk:Option<riff::Chunk> = None;
         let mut shdr:Vec<u8> = vec![];
         let mut phdr:Vec<u8> = vec![];
         let mut pbag:Vec<u8> = vec![];
@@ -161,45 +177,44 @@ impl SF2{
         let mut preset_bags:Vec<SF2Bag> = vec![];
         let mut presets:Vec<SF2Preset> = vec![];
 
-        let lists:Vec<_> = util::unwrap_result_iter(riff_data.iter(data))?;
-        for child in lists.iter() {
-            let child_type = child.read_type(data)?.as_str().to_string();
-            let chunks:Vec<_> = util::unwrap_result_iter(child.iter(data))?;
-            for chunk in chunks.iter() {
+        let lists_iter = util::unwrap_result_iter(riff_data.iter(stream))?;
+        for child in lists_iter {
+            let child_type = child.read_type(stream)?.as_str().to_string();
+            let chunks_iter = util::unwrap_result_iter(child.iter(stream))?;
+            for chunk in chunks_iter {
                 if child_type == "INFO" {
                     match chunk.id().as_str() {
                         "ifil" => {
-                            let contents = &chunk.read_contents(data)?;
+                            let contents = chunk.read_contents(stream)?;
                             let major = u16::from_le_bytes(contents[0..=1].try_into()?);
                             let minor = u16::from_le_bytes(contents[2..=3].try_into()?);
                             info.sf_version = [major,minor];
                         },
-                        "isng" => info.target_sound_engine.push_str(std::str::from_utf8(&chunk.read_contents(data)?)?),
-                        "INAM" => info.bank_name.push_str(std::str::from_utf8(&chunk.read_contents(data)?)?),
-                        "irom" => info.rom_name.push_str(std::str::from_utf8(&chunk.read_contents(data)?)?),
+                        "isng" => info.target_sound_engine.push_str(std::str::from_utf8(&chunk.read_contents(stream)?)?),
+                        "INAM" => info.bank_name.push_str(std::str::from_utf8(&chunk.read_contents(stream)?)?),
+                        "irom" => info.rom_name.push_str(std::str::from_utf8(&chunk.read_contents(stream)?)?),
                         "iver" => {
-                            let contents = &chunk.read_contents(data)?;
+                            let contents = chunk.read_contents(stream)?;
                             let major = u16::from_le_bytes(contents[0..=1].try_into()?);
                             let minor = u16::from_le_bytes(contents[2..=3].try_into()?);
                             info.rom_version = [major,minor];
                         },
-                        "ICRD" => info.created_date.push_str(std::str::from_utf8(&chunk.read_contents(data)?)?),
-                        "IENG" => info.engineers.push_str(std::str::from_utf8(&chunk.read_contents(data)?)?),
-                        "IPRD" => info.target_hardware.push_str(std::str::from_utf8(&chunk.read_contents(data)?)?),
-                        "ICOP" => info.copyright.push_str(std::str::from_utf8(&chunk.read_contents(data)?)?),
-                        "ICMT" => info.comments.push_str(std::str::from_utf8(&chunk.read_contents(data)?)?),
-                        "ISFT" => info.created_software.push_str(std::str::from_utf8(&chunk.read_contents(data)?)?),
+                        "ICRD" => info.created_date.push_str(std::str::from_utf8(&chunk.read_contents(stream)?)?),
+                        "IENG" => info.engineers.push_str(std::str::from_utf8(&chunk.read_contents(stream)?)?),
+                        "IPRD" => info.target_hardware.push_str(std::str::from_utf8(&chunk.read_contents(stream)?)?),
+                        "ICOP" => info.copyright.push_str(std::str::from_utf8(&chunk.read_contents(stream)?)?),
+                        "ICMT" => info.comments.push_str(std::str::from_utf8(&chunk.read_contents(stream)?)?),
+                        "ISFT" => info.created_software.push_str(std::str::from_utf8(&chunk.read_contents(stream)?)?),
                         &_ => {}
                     }
                 }else if child_type == "sdta" {
-                    let contents = chunk.read_contents(data)?;
                     match chunk.id().as_str() {
-                        "smpl" => smpl = contents,
-                        "sm24" => sm24 = contents,
+                        "smpl" => smpl_chunk = Some(chunk),
+                        "sm24" => sm24_chunk = Some(chunk),
                         &_ => {}
                     }
                 }else if child_type == "pdta" {
-                    let contents = chunk.read_contents(data)?;
+                    let contents = chunk.read_contents(stream)?;
                     match chunk.id().as_str() {
                         "shdr" => {
                             shdr = contents;
@@ -480,8 +495,9 @@ impl SF2{
         return Ok(Self{
             info:info,
             sample_headers:sample_headers,
-            sample_data:smpl,
-            sm24_data:sm24,
+            smpl_chunk:smpl_chunk,
+            sm24_chunk:sm24_chunk,
+            samples:None,
             instruments:instruments,
             presets:presets
         });
