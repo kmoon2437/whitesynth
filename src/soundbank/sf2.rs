@@ -118,7 +118,7 @@ pub struct SF2Error{
 
 impl SF2Error{
     fn new(message:&str) -> Self{
-        return Self{ message:message.to_string() };
+        return Self{ message:message.to_owned() };
     }
 }
 
@@ -179,7 +179,7 @@ impl SF2{
 
         let lists_iter = util::unwrap_result_iter(riff_data.iter(stream))?;
         for child in lists_iter {
-            let child_type = child.read_type(stream)?.as_str().to_string();
+            let child_type = child.read_type(stream)?.as_str().to_owned();
             let chunks_iter = util::unwrap_result_iter(child.iter(stream))?;
             for chunk in chunks_iter {
                 if child_type == "INFO" {
