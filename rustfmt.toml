@@ -1,0 +1,7 @@
+trailing_comma = "Never"
+tab_spaces = 4
+hard_tabs = false
+brace_style = "PreferSameLine"
+reorder_impl_items = false
+reorder_imports = false
+reorder_modules = false
