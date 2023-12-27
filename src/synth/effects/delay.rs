@@ -42,8 +42,8 @@ impl Delay{
     }
 
     pub fn process(&mut self,input:f64) -> f64{
-        let output = util::synth::mix_samples(&[input,self.level * self.ring_buf.read(0)]);
-        self.ring_buf.write(util::synth::mix_samples(&[input,self.feedback * self.ring_buf.read(0)]));
+        let output = util::synth::mix_two_samples(input,self.level * self.ring_buf.read(0));
+        self.ring_buf.write(util::synth::mix_two_samples(input,self.feedback * self.ring_buf.read(0)));
         self.ring_buf.next();
         return output;
     }
