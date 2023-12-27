@@ -59,7 +59,6 @@ cent 단위로 전체 음높이를 조율한다. 1키 = 100cent이다. GM의 Mas
     - 기본값: Center(64)
 
 ### 기본 이펙트 관련 설정
-이 부분은 확정된 것이 아니며, 변경될 수 있다.
 
 <!--#### Remove reverberation - `02 00 00 00`
 reverb/delay 이펙트로 인해 volume을 줄이거나 all sound off를 해도 잔향이 남는 경우가 있는데, 이러한 잔향을 깔끔히 없앤다.
