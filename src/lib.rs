@@ -1,5 +1,3 @@
-//#![allow(non_snake_case)]
-
 /**
  * whitesynth
  * https://github.com/kmoon2437/whitesynth
@@ -10,8 +8,8 @@
 pub mod consts;
 pub mod soundbank;
 pub mod synth;
-pub mod audio_drivers;
 pub mod util;
+pub mod audio_drivers;
 
 #[cfg(test)]
 mod tests;

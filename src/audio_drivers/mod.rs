@@ -1,9 +1,8 @@
 /**
  * 오디오 출력용 드라이버
+ * fluidsynth에 있는 것들 가져온 거라 몇몇은 지워질 수도 있음
  */
-
 // 윈도우
-//pub mod direct_sound; // 어차피 wasapi 쓰는거랑 별 차이 없지 않을까
 //pub mod wasapi;
 //pub mod waveout;
 
@@ -23,12 +22,12 @@ pub mod audio_file; // 그저 wav 파일
 //pub mod port_audio; // 리눅스,유닉스,윈도우,맥os 등등
 //pub mod sdl2; // 리눅스,유닉스,윈도우,맥os,아이폰(ios) 등등
 
-pub trait AudioDriver{
+pub trait AudioDriver {
     // 실시간으로 맞춰줘야 되는지 여부
     fn get_is_realtime(&self) -> bool;
 
     // 오디오 데이터 전송
-    fn send_sample(&self,left:f64,right:f64) -> Result<(),Box<dyn std::error::Error>>;
+    fn send_sample(&self, left: f64, right: f64) -> Result<(), Box<dyn std::error::Error>>;
 
     // 끝! 낸다
     fn terminate(self);
