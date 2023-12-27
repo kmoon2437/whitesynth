@@ -23,8 +23,10 @@ use log4rs::{
 use chrono::offset::Local;
 
 // 테스트용
-use std::fs::File;
-use whitesynth::soundbank::sf2::SF2;
+//use std::fs::File;
+use whitesynth::audio_drivers::AudioDriver;
+use whitesynth::audio_drivers::alsa::ALSA;
+use whitesynth::synth::effects::lfo::LFO;
 
 fn init_logger(verbose: bool) -> Result<log4rs::Handle,Box<dyn std::error::Error>>{
     let file_log_pattern = "{d(%Y-%m-%d %H:%M:%S %Z)} [{l}] {m}{n}";
@@ -61,21 +63,14 @@ fn init_logger(verbose: bool) -> Result<log4rs::Handle,Box<dyn std::error::Error
 fn main() -> Result<(),Box<dyn std::error::Error>>{
     let _handle = init_logger(false)?;
 
-    let args:Vec<String> = std::env::args().collect();
-    log::info!("args: {}",&args[1]);
-    let mut file = File::open(&args[1])?;
-    let sf = SF2::new(&mut file)?;
-    log::info!("Soundfont version: {}.{}",sf.info.sf_version[0],sf.info.sf_version[1]);
-    log::info!("Target sound engine: {}",sf.info.target_sound_engine);
-    log::info!("Soundfont name: {}",sf.info.bank_name);
-    log::info!("ROM name: {}",sf.info.rom_name);
-    log::info!("ROM version: {}.{}",sf.info.rom_version[0],sf.info.rom_version[1]);
-    log::info!("Created at: {}",sf.info.created_date);
-    log::info!("Engineers: {}",sf.info.engineers);
-    log::info!("Target hardware: {}",sf.info.target_hardware);
-    log::info!("Copyright: {}",sf.info.copyright);
-    log::info!("Created with: {}",sf.info.created_software);
-    log::info!("Comments: {}",sf.info.comments);
+    let mut lfo = LFO::new(48000.0);
+    lfo.set_frequency(220.0);
+    let alsa = ALSA::new(48000);
+    for _ in 0..2*48000 {
+        let smpl = lfo.sine() / 2.0;
+        alsa.send_sample(smpl,smpl)?;
+    }
+    std::thread::sleep(std::time::Duration::from_secs(3));
 
     return Ok(());
 }
