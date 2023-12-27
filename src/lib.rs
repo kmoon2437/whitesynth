@@ -10,6 +10,7 @@
 pub mod consts;
 pub mod soundbank;
 pub mod synth;
+pub mod audio_drivers;
 pub mod util;
 
 #[cfg(test)]
