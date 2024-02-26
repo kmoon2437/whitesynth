@@ -18,6 +18,7 @@ pub mod alsa;
 
 // 기타
 pub mod audio_file; // 그저 wav 파일
+pub mod pipe; // stdout으로 모든 것을 보내버림
 //pub mod core_audio; // 맥os,아이폰(ios): 지원예정 없음
 //pub mod port_audio; // 리눅스,유닉스,윈도우,맥os 등등
 //pub mod sdl2; // 리눅스,유닉스,윈도우,맥os,아이폰(ios) 등등
