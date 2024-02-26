@@ -50,7 +50,7 @@ impl LFO {
     }
 
     pub fn square(&mut self) -> f64 {
-        return 1.0_f64.powf(self.next_tick() / self.period);
+        return self.sine().signum();
     }
 
     pub fn triangle(&mut self) -> f64 {
