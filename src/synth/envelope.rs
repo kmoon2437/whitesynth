@@ -144,7 +144,7 @@ impl Envelope {
         return ms / 1000.0 * self.sample_rate;
     }
 
-    // 샘플 1개분의 시간만큼 진행
+    // 샘플 count개분의 시간만큼 진행
     pub fn process(&mut self, count: usize) {
         if self.status == EnvelopeStatus::Waiting || self.status == EnvelopeStatus::Finished {
             return;
