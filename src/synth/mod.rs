@@ -149,11 +149,15 @@ impl Synth {
     }
 
     // variation effect 관련 기능
-    pub fn set_variation_fx_type(&mut self, vfx_type: VariationFXType) {
+    pub fn set_variation_fx_type(&mut self, unit: u8, vfx_type: VariationFXType) {
         //
     }
 
-    pub fn set_variation_fx_parameter(&mut self, param_no: i32, val: i32) {
+    pub fn set_variation_fx_parameter(&mut self, unit: u8, param_no: i32, val: i32) {
         //
     }
+
+    pub fn render(&mut self, left: &mut [f64], right: &mut [f64]) {}
+
+    pub fn render_buffer(&mut self) {}
 }
