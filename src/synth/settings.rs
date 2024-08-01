@@ -21,18 +21,24 @@ pub struct SynthCreateSettings {
     pub(crate) polyphony: usize, // 1 - 65535 (기본값 = 384)
 
     // 성능 최적화를 위해 일정 크기의 버퍼를 한 번에 렌더링하게 되는데, 이 버퍼의 크기를 설정
-    // 함수 호출할 때 비용이 있어서 그 비용을 줄여야 소리가 안 끊김
-    pub(crate) render_buffer_size: usize, // 1 - 2048 (기본값 = 64)
+    // 함수 호출할 때 비용이 있어서 그 비용을 줄여야 더 빨라짐
+    pub(crate) render_buffer_size: usize, // 1 - 2048 (기본값 = 128)
 }
 
-impl SynthCreateSettings {
-    pub fn new() -> Self {
+impl Default for SynthCreateSettings {
+    fn default() -> Self {
         return Self {
             max_worker_threads: 1,
             min_note_length: 10,
             polyphony: 384,
-            render_buffer_size: 64
+            render_buffer_size: 128
         };
+    }
+}
+
+impl SynthCreateSettings {
+    pub fn new() -> Self {
+        return Default::default();
     }
 
     pub fn set_max_worker_threads(&mut self, val: usize) {

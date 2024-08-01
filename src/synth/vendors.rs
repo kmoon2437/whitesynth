@@ -15,4 +15,4 @@ pub const STD_NON_REALTIME: VendorId = VendorId::Standard(0x7e);
 pub const STD_REALTIME: VendorId = VendorId::Standard(0x7f);
 pub const ROLAND: VendorId = VendorId::Standard(0x41);
 pub const YJ: VendorId = STD_DEV;
-//pub const YJ: VendorId = VendorId::Extended(0x34, 0x0f); // 이랬으면 좋겠다
+//pub const YJ: VendorId = VendorId::Extended(0x34, 0x0f); // 이랬으면 좋겠다(ID 발급받으려면 매년마다 돈 내야 됨)

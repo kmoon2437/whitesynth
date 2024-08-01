@@ -1,4 +1,4 @@
-pub mod src {
+pub mod src { // source, control
     // 기본: 0x0000 - 0x00ff
     pub const NONE: u32 = 0x0000;
     pub const PITCH_WHEEL: u32 = 0x0001;
@@ -16,11 +16,17 @@ pub mod src {
     pub fn midi_cc(no: u32) -> u32 {
         return MIDI_CONTROL_CHANGE + no;
     }
+    pub fn is_midi_cc(val: u32) -> bool {
+        return MIDI_CONTROL_CHANGE == (val & 0xffff0000);
+    }
 
     // midi rpn: 0x00020000 - 0x0002ffff
     pub const MIDI_RPN: u32 = 0x00020000;
     pub fn midi_rpn(msb: u32, lsb: u32) -> u32 {
         return MIDI_RPN + (msb << 8) + lsb;
+    }
+    pub fn is_midi_rpn(val: u32) -> bool {
+        return MIDI_RPN == (val & 0xffff0000);
     }
 
     // midi nrpn: 0x00040000 - 0x0004ffff
@@ -28,9 +34,12 @@ pub mod src {
     pub fn midi_nrpn(msb: u32, lsb: u32) -> u32 {
         return MIDI_NRPN + (msb << 8) + lsb;
     }
+    pub fn is_midi_nrpn(val: u32) -> bool {
+        return MIDI_NRPN == (val & 0xffff0000);
+    }
 }
 
-pub mod dest {
+pub mod dest { // destination
     pub const NONE: u32 = 0x0000;
     pub const GAIN: u32 = 0x0001;
     pub const PITCH: u32 = 0x0002;
@@ -40,10 +49,13 @@ pub mod dest {
 
     pub const LEFT_SEND: u32 = 0x0020;
     pub const RIGHT_SEND: u32 = 0x0021;
+
+    // center, lfe, rear send는 구현 예정 없음
     pub const CENTER_SEND: u32 = 0x0022;
     pub const LFE_CHANNEL_SEND: u32 = 0x0023;
     pub const LEFT_REAR_SEND: u32 = 0x0024;
     pub const RIGHT_REAR_SEND: u32 = 0x0025;
+
     pub const REVERB_SEND: u32 = 0x0026;
     pub const CHORUS_SEND: u32 = 0x0027;
 
@@ -82,4 +94,11 @@ pub mod transform {
 
     pub const INVERTED: u8 = 0x10;
     pub const BIPOLAR: u8 = 0x20;
+
+    pub fn is_inverted(transform: u8) -> bool {
+        return (transform & 0xf0) == INVERTED;
+    }
+    pub fn is_bipolar(transform: u8) -> bool {
+        return (transform & 0xf0) == BIPOLAR;
+    }
 }

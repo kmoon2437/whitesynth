@@ -3,20 +3,27 @@ pub mod lfo;
 pub mod settings;
 pub mod vendors;
 
+use crate::soundbank::wsbk::WSBK;
 use vendors::VendorId;
+use settings::SynthCreateSettings;
 
 #[derive(PartialEq, Eq, Debug)]
-pub struct MFXType(pub u8, pub u8, pub u8);
+pub struct FXType(pub u8, pub u8, pub u8);
 
-#[derive(PartialEq, Eq, Debug)]
-pub struct VariationFXType(pub u8, pub u8, pub u8);
-
-pub struct Synth {}
+pub struct Synth {
+    soundbanks: Vec<WSBK>,
+    buffer_left: Vec<u8>,
+    buffer_right: Vec<u8>
+}
 
 #[allow(unused)] // 모든 기능이 완성될 즈음에 제거 예정
 impl Synth {
-    pub fn new() -> Self {
-        return Self {};
+    pub fn new(settings: SynthCreateSettings) -> Self {
+        return Self {
+            soundbanks: vec![],
+            buffer_left: vec![],
+            buffer_right: vec![]
+        };
     }
 
     // midi 기본기능
@@ -140,7 +147,7 @@ impl Synth {
     }
 
     // multi effect(이하 mfx) 관련 기능
-    pub fn set_mfx_type(&mut self, channel_no: u8, unit: u8, mfx_type: MFXType) {
+    pub fn set_mfx_type(&mut self, channel_no: u8, unit: u8, mfx_type: FXType) {
         //
     }
 
@@ -149,7 +156,7 @@ impl Synth {
     }
 
     // variation effect 관련 기능
-    pub fn set_variation_fx_type(&mut self, unit: u8, vfx_type: VariationFXType) {
+    pub fn set_variation_fx_type(&mut self, unit: u8, vfx_type: FXType) {
         //
     }
 
@@ -159,5 +166,7 @@ impl Synth {
 
     pub fn render(&mut self, left: &mut [f64], right: &mut [f64]) {}
 
-    pub fn render_buffer(&mut self) {}
+    pub fn render_as_one_array(&mut self, left: &mut [f64], right: &mut [f64]) {}
+
+    fn render_buffer(&mut self) {}
 }

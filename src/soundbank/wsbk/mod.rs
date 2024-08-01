@@ -14,7 +14,7 @@ pub mod articulators;
 pub mod fourcc;
 
 fn make_name(name: &str) -> ChunkContents {
-    return ChunkContents::Data(fourcc::SMDT, name.as_bytes().to_vec());
+    return ChunkContents::Data(fourcc::NAME, name.as_bytes().to_vec());
 }
 
 // 해당 샘플이 mono인지 stereo인지 정의함
@@ -208,7 +208,8 @@ pub struct Articulator {
     pub control: u32,
     pub control_transform: u8,
     pub destination: u32,
-    pub output_transform: u8
+    pub main_transform: u8,
+    pub scale: f64
 }
 
 impl Articulator {
@@ -241,15 +242,20 @@ impl Articulator {
             stream.read_exact(&mut destination_bytes)?;
             let destination = u32::from_le_bytes(destination_bytes);
 
-            let mut output_transform = [0];
-            stream.read_exact(&mut output_transform)?;
-            let output_transform = output_transform[0];
+            let mut main_transform = [0];
+            stream.read_exact(&mut main_transform)?;
+            let main_transform = main_transform[0];
+
+            let mut scale = [0; 8];
+            stream.read_exact(&mut scale)?;
+            let scale = f64::from_le_bytes(scale);
 
             articulators.push(Self {
                 src, src_transform,
                 control, control_transform,
                 destination,
-                output_transform
+                main_transform,
+                scale
             });
         }
         return Ok(articulators);
@@ -264,7 +270,8 @@ impl Articulator {
             stream.write_all(&articulator.control.to_le_bytes())?;
             stream.write_all(&[articulator.control_transform])?;
             stream.write_all(&articulator.destination.to_le_bytes())?;
-            stream.write_all(&[articulator.output_transform])?;
+            stream.write_all(&[articulator.main_transform])?;
+            stream.write_all(&articulator.scale.to_le_bytes())?;
         }
         return Ok(ChunkContents::Data(fourcc::ARTC, stream.into_inner()));
     }
