@@ -1,5 +1,5 @@
 # whitesynth
-soundfont 지원 소프트웨어 미디음원 라이브러리
+소프트웨어 미디음원 라이브러리
 
 개발중. 많이 불안정함
 
@@ -12,6 +12,7 @@ soundfont 지원 소프트웨어 미디음원 라이브러리
 - 배리에이션 이펙트(variation effect) 1포트당 16개(scva efx 호환용) + 채널 1개당 멀티 이펙트(multi effect) 16개
   - <https://www.utsbox.com/?p=3302> 이 플러그인에서 지원하는 이펙트 중 일부는 multi effect 형태로 구현할 수도 있음
 - [여기](https://github.com/kmoon2437/whitesynth-docs)에 어떻게 만들지 사용설명서 형태로 문서를 만들어 놓았음. 완성된 게 아니므로 자주 바뀔 수 있음
+- soundfont 파일 로딩(자체 파일 형식을 만들어서 구현한 다음 그쪽으로 변환하는 방식으로 구현 예정)
 
 ## 기타
 - 「SoundFont」는 E-mu Systems, Inc. 사가 등록한 상표다.
