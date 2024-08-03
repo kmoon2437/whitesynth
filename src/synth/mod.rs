@@ -2,6 +2,7 @@ pub mod envelope;
 pub mod lfo;
 pub mod settings;
 pub mod vendors;
+pub mod param_smoother;
 
 use crate::soundbank::wsbk::WSBK;
 use vendors::VendorId;

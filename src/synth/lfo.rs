@@ -35,24 +35,29 @@ impl LFO {
         self.period = self.sample_rate / self.frequency;
     }
 
+    #[inline]
     fn next_tick(&mut self) -> f64 {
         self.tick += 1.0; // 초기값을 -1로 설정한 이유
         return self.tick;
     }
 
+    #[inline]
     pub fn sine(&mut self) -> f64 {
         return (2.0 * PI * self.next_tick() / self.period).sin();
     }
 
+    #[inline]
     pub fn sawtooth(&mut self) -> f64 {
         let tick = self.next_tick() / self.period;
         return 2.0 * (tick - tick.round());
     }
 
+    #[inline]
     pub fn square(&mut self) -> f64 {
         return self.sine().signum();
     }
 
+    #[inline]
     pub fn triangle(&mut self) -> f64 {
         return self.sine().asin();
     }
