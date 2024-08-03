@@ -1,5 +1,22 @@
 use riff::ChunkId;
 
+/**
+ * wsbk = whitesynth soundbank
+ * name = name
+ *
+ * smls = sample list
+ * smpl = sample
+ * smhd = sample header
+ * smdt = sample data
+ *
+ * lrgn = region list
+ * rgni = region info
+ * rgnh = region header
+ *
+ * lgen = generators list
+ * artc = articulators
+ */
+
 pub const WSBK: ChunkId = ChunkId { value: [b'w', b's', b'b', b'k'] };
 pub const NAME: ChunkId = ChunkId { value: [b'n', b'a', b'm', b'e'] };
 
@@ -12,6 +29,7 @@ pub const LRGN: ChunkId = ChunkId { value: [b'l', b'r', b'g', b'n'] };
 pub const RGNI: ChunkId = ChunkId { value: [b'r', b'g', b'n', b'i'] };
 pub const RGNH: ChunkId = ChunkId { value: [b'r', b'g', b'n', b'h'] };
 
+pub const LGEN: ChunkId = ChunkId { value: [b'l', b'g', b'e', b'n'] };
 pub const ARTC: ChunkId = ChunkId { value: [b'a', b'r', b't', b'c'] };
 
 pub const LINS: ChunkId = ChunkId { value: [b'l', b'i', b'n', b's'] };

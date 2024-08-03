@@ -5,12 +5,13 @@
 
 use std::sync::Arc;
 use std::io::{ Read, Seek, Cursor, Write };
+use std::collections::HashMap;
 use anyhow::bail;
 use riff::{ Chunk, ChunkContents };
 
 use crate::util;
 
-pub mod articulators;
+pub mod consts;
 pub mod fourcc;
 
 fn make_name(name: &str) -> ChunkContents {
@@ -288,6 +289,9 @@ pub struct Region {
     // instrument region이면 샘플, preset region이면 instrument를 가리킴
     pub target_index: u32,
 
+    // generator
+    pub generators: HashMap<u16, i32>,
+
     // articulator
     pub articulators: Vec<Articulator>
 }
@@ -330,7 +334,8 @@ impl Region {
 
         return Ok(Self {
             key_range, velocity_range,
-            target_index, articulators
+            target_index,
+            generators: HashMap::new(), articulators
         });
     }
 

@@ -1,4 +1,4 @@
-pub mod src { // source, control
+pub mod artc_src { // source, control
     // 기본: 0x0000 - 0x00ff
     pub const NONE: u32 = 0x0000;
     pub const PITCH_WHEEL: u32 = 0x0001;
@@ -39,25 +39,26 @@ pub mod src { // source, control
     }
 }
 
-pub mod dest { // destination
+pub mod artc_dest { // destination
     pub const NONE: u32 = 0x0000;
     pub const GAIN: u32 = 0x0001;
     pub const PITCH: u32 = 0x0002;
     pub const PAN: u32 = 0x0003;
+
+    // 얘넨 딱히 구현 안 할 예정
     pub const NOTE_ON_VELOCITY: u32 = 0x0004;
     pub const NOTE_NUMBER: u32 = 0x0005;
 
+    // 6채널(5.1채널?) 출력용이라 구현 안할 수도 있음
     pub const LEFT_SEND: u32 = 0x0020;
     pub const RIGHT_SEND: u32 = 0x0021;
-
-    // center, lfe, rear send는 구현 예정 없음
     pub const CENTER_SEND: u32 = 0x0022;
     pub const LFE_CHANNEL_SEND: u32 = 0x0023;
     pub const LEFT_REAR_SEND: u32 = 0x0024;
     pub const RIGHT_REAR_SEND: u32 = 0x0025;
 
-    pub const REVERB_SEND: u32 = 0x0026;
-    pub const CHORUS_SEND: u32 = 0x0027;
+    pub const REVERB_SEND_COEFF: u32 = 0x0026;
+    pub const CHORUS_SEND_COEFF: u32 = 0x0027;
 
     pub const MODULATION_LFO_FREQUENCY: u32 = 0x0100;
     pub const MODULATION_LFO_START_DELAY: u32 = 0x0101;
@@ -86,7 +87,7 @@ pub mod dest { // destination
     pub const HPF_Q: u32 = 0x0601;
 }
 
-pub mod transform {
+pub mod artc_transform {
     pub const LINEAR: u8 = 0x0;
     pub const CONCAVE: u8 = 0x1;
     pub const CONVEX: u8 = 0x2;
