@@ -13,8 +13,8 @@ pub fn get_initial_cc() -> [u8; 128] {
     cc_values[cc_ids_i::BANK_SELECT] = 0;
     cc_values[cc_ids_i::MODULATION] = 0;
 
-    /*cc_values[cc_ids_i::BREATH] = 0;
-    cc_values[cc_ids_i::FOOT] = 0;*/
+    cc_values[cc_ids_i::BREATH] = 0;
+    cc_values[cc_ids_i::FOOT] = 0;
 
     cc_values[cc_ids_i::PORTAMENTO_TIME] = 0;
     cc_values[cc_ids_i::DATA_ENTRY_MSB] = 0;
