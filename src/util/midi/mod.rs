@@ -26,12 +26,13 @@ pub fn get_initial_cc() -> [u8; 128] {
     cc_values[cc_ids_i::EXPRESSION] = 127;
 
     /*cc_values[cc_ids_i::EFFECT_1] = 0;
-    cc_values[cc_ids_i::EFFECT_2] = 0;
+    cc_values[cc_ids_i::EFFECT_2] = 0;*/
 
-    cc_values[cc_ids_i::GENERAL_PURPOSE_1] = 0;
-    cc_values[cc_ids_i::GENERAL_PURPOSE_2] = 0;
-    cc_values[cc_ids_i::GENERAL_PURPOSE_3] = 0;
-    cc_values[cc_ids_i::GENERAL_PURPOSE_4] = 0;*/
+    // general purpose 1~4
+    cc_values[cc_ids_i::TONE_PARAMETER_1] = 0;
+    cc_values[cc_ids_i::TONE_PARAMETER_2] = 0;
+    cc_values[cc_ids_i::TONE_PARAMETER_3] = 0;
+    cc_values[cc_ids_i::TONE_PARAMETER_4] = 0;
 
     cc_values[cc_ids_i::BANK_SELECT_LSB] = 0;
 
@@ -89,12 +90,11 @@ pub fn get_initial_cc() -> [u8; 128] {
     cc_values[cc_ids_i::VIBRATO_DELAY] = 64; // sound controller 9
     cc_values[cc_ids_i::SUSTAIN_LEVEL] = 64; // sound controller 10
 
-    //cc_values[cc_ids_i::GENERAL_PURPOSE_5] = 0;
-
-    cc_values[cc_ids_i::HPF_CUTOFF_FREQUENCY] = 64; // general purpose 6
-
-    /*cc_values[cc_ids_i::GENERAL_PURPOSE_7] = 0;
-    cc_values[cc_ids_i::GENERAL_PURPOSE_8] = 0;*/
+    // general purpose 5~8
+    cc_values[cc_ids_i::TONE_CHANGE_SWITCH_1] = 0;
+    cc_values[cc_ids_i::TONE_CHANGE_SWITCH_2] = 0;
+    cc_values[cc_ids_i::TONE_CHANGE_SWITCH_3] = 0;
+    cc_values[cc_ids_i::TONE_CHANGE_SWITCH_4] = 0;
 
     cc_values[cc_ids_i::PORTAMENTO_CONTROL] = 0;
 

@@ -90,10 +90,14 @@ pub const SOUND_CONTROLLER_9: u8 = 0x4e;
 pub const SOUND_CONTROLLER_10: u8 = 0x4f;
 
 pub const GENERAL_PURPOSE_5: u8 = 0x50;
+pub const TONE_CHANGE_SWITCH_1: u8 = 0x50;
 pub const GENERAL_PURPOSE_6: u8 = 0x51;
-pub const HPF_CUTOFF_FREQUENCY: u8 = 0x51;
+pub const TONE_CHANGE_SWITCH_2: u8 = 0x51;
 pub const GENERAL_PURPOSE_7: u8 = 0x52;
+pub const TONE_CHANGE_SWITCH_3: u8 = 0x52;
 pub const GENERAL_PURPOSE_8: u8 = 0x53;
+pub const TONE_CHANGE_SWITCH_4: u8 = 0x53;
+
 pub const PORTAMENTO_CONTROL: u8 = 0x54;
 
 pub const HIGH_RESOLUTION_VELOCITY_PREFIX: u8 = 0x58;

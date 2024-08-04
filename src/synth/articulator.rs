@@ -107,8 +107,8 @@ impl ArticulationUnit {
  * 그러므로 실질적으로는 "값 자체"를 -2147483648 - 180000 범위 내에서 사용할 것을 권장함. 이렇게 하면 밀리초 값의 범위가 약 0ms - 262144ms(262.144초)가 됨
  */
 pub struct AriculationValues {
-    // 게인: 0.001dBFS 단위
-    // 즉 -144000 = -144dBFS가 되는 거임
+    // 게인: 0.01dBFS 단위
+    // 즉 -14400 = -144dBFS가 되는 거임
     pub gain: i32,
 
     // 피치: 0.1cent 단위
@@ -149,7 +149,7 @@ pub struct AriculationValues {
     pub modulation_env_release: i32,
 
     // cutoff = Hz 단위
-    // q = 0.001dbFS 단위(즉 -144000 = -144dBFS가 되는 거임)
+    // q = 0.01dBFS 단위(즉 -14400 = -144dBFS가 되는 거임)
     pub lpf_cutoff: i32,
     pub lpf_q: i32,
     pub hpf_cutoff: i32,

@@ -13,28 +13,40 @@ pub mod artc_src { // source, control
 
     // midi control change: 0x00010000 - 0x000100ff
     pub const MIDI_CONTROL_CHANGE: u32 = 0x00010000;
-    pub fn midi_cc(no: u32) -> u32 {
+
+    #[inline]
+    pub const fn midi_cc(no: u32) -> u32 {
         return MIDI_CONTROL_CHANGE + no;
     }
-    pub fn is_midi_cc(val: u32) -> bool {
+
+    #[inline]
+    pub const fn is_midi_cc(val: u32) -> bool {
         return MIDI_CONTROL_CHANGE == (val & 0xffff0000);
     }
 
     // midi rpn: 0x00020000 - 0x0002ffff
     pub const MIDI_RPN: u32 = 0x00020000;
-    pub fn midi_rpn(msb: u32, lsb: u32) -> u32 {
+
+    #[inline]
+    pub const fn midi_rpn(msb: u32, lsb: u32) -> u32 {
         return MIDI_RPN + (msb << 8) + lsb;
     }
-    pub fn is_midi_rpn(val: u32) -> bool {
+
+    #[inline]
+    pub const fn is_midi_rpn(val: u32) -> bool {
         return MIDI_RPN == (val & 0xffff0000);
     }
 
     // midi nrpn: 0x00040000 - 0x0004ffff
     pub const MIDI_NRPN: u32 = 0x00040000;
-    pub fn midi_nrpn(msb: u32, lsb: u32) -> u32 {
+
+    #[inline]
+    pub const fn midi_nrpn(msb: u32, lsb: u32) -> u32 {
         return MIDI_NRPN + (msb << 8) + lsb;
     }
-    pub fn is_midi_nrpn(val: u32) -> bool {
+
+    #[inline]
+    pub const fn is_midi_nrpn(val: u32) -> bool {
         return MIDI_NRPN == (val & 0xffff0000);
     }
 }
@@ -96,10 +108,13 @@ pub mod artc_transform {
     pub const INVERTED: u8 = 0x10;
     pub const BIPOLAR: u8 = 0x20;
 
-    pub fn is_inverted(transform: u8) -> bool {
+    #[inline]
+    pub const fn is_inverted(transform: u8) -> bool {
         return (transform & 0xf0) == INVERTED;
     }
-    pub fn is_bipolar(transform: u8) -> bool {
+
+    #[inline]
+    pub const fn is_bipolar(transform: u8) -> bool {
         return (transform & 0xf0) == BIPOLAR;
     }
 }
