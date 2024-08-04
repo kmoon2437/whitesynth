@@ -1,6 +1,3 @@
-use std::f64::consts::PI; // 원주율
-use std::f64::consts::E; // 자연로그의 밑
-
 pub struct ParamSmoother {
     slope: f64,
     smoothing_time_samples: f64,
