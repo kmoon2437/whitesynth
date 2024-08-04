@@ -74,9 +74,9 @@ pub fn get_initial_cc() -> [u8; 128] {
     cc_values[cc_ids_i::PORTAMENTO_ONOFF] = 0;
     cc_values[cc_ids_i::SOSTENUTO_ONOFF] = 0;
     cc_values[cc_ids_i::SOFT_PEDAL_ONOFF] = 0;
+    cc_values[cc_ids_i::LEGATO_FOOTSWITCH] = 0;
 
-    /*cc_values[cc_ids_i::LEGATO_FOOTSWITCH] = 0;
-    cc_values[cc_ids_i::HOLD_2] = 0;*/
+    //cc_values[cc_ids_i::HOLD_2] = 0;
 
     //cc_values[cc_ids_i::SOUND_VARIATION] = 0; // sound controller 1
     cc_values[cc_ids_i::TIMBRE_HARMONIC_INTENS] = 64; // sound controller 2
