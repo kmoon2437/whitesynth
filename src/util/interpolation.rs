@@ -20,18 +20,18 @@
  * 선형 보간: 제일 단순함
  * 0 <= t <= 1
  */
-pub fn interpolate_linear(t: f64, v0: f64, v1: f64) {
-    // (1.0 - t) * v1 + t * v2 라는 직관적인 식이 있지만
+pub fn interpolate_linear(t: f64, v0: f64, v1: f64) -> f64 {
+    // (1.0 - t) * v0 + t * v1 라는 직관적인 식이 있지만
     // 연산량을 조금이라도 줄이기 위해 아래 식을 씀
-    return v1 + t * (v2 - v1);
+    return v0 + t * (v1 - v0);
 }
 
 /**
  * 라그랑주 3차다항식 보간
  * -1 <= t <= 2
  */
-pub fn interpolate_cubic(t: f64, vb1: f64, v0: f64, v1: f64, v2: f64) {
-    /**
+pub fn interpolate_cubic(t: f64, vb1: f64, v0: f64, v1: f64, v2: f64) -> f64 {
+    /*
      * (-1.0, vb1)
      * (0.0, v0)
      * (1.0, v1)
