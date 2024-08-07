@@ -1,5 +1,6 @@
 pub mod envelope;
 pub mod lfo;
+pub mod effects;
 pub mod settings;
 pub mod vendors;
 pub mod param_smoother;
