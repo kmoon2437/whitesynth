@@ -14,15 +14,15 @@ pub struct Distortion {
     volume: f64,
 
     // 필터 처리기(필요시 활성화)
-    hpf: Filter
+    pre_filter: Filter
 }
 
 impl Distortion {
     pub fn new(sample_rate: f64) -> Self {
         let mut this = Self {
             drive: 50.0,
-            volume: 0.3,
-            hpf: Filter::new(sample_rate)
+            volume: 0.5,
+            pre_filter: Filter::new(sample_rate)
         };
         this.set_enable_pre_filter(true);
         return this;
@@ -30,9 +30,9 @@ impl Distortion {
 
     pub fn set_enable_pre_filter(&mut self, enable: bool) {
         if enable {
-            self.hpf.high_pass(200.0, 1.0 / ((2.0_f64).sqrt()));
+            self.pre_filter.high_pass(100.0, 1.0 / ((2.0_f64).sqrt()));
         } else {
-            self.hpf.clear();
+            self.pre_filter.clear();
         }
     }
 
@@ -45,7 +45,7 @@ impl Distortion {
     }
 
     pub fn process(&mut self, buf: &mut [f64]) {
-        self.hpf.process(buf);
+        self.pre_filter.process(buf);
         for src in buf.iter_mut() {
             *src = ((*src) * self.drive).max(-1.0).min(1.0) * self.volume;
         }

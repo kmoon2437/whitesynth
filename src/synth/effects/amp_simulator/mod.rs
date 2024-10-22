@@ -3,8 +3,8 @@
  * 참조 소스코드: https://github.com/micbuffa/WebAudio-Guitar-Amplifier-Simulator-3/blob/master/js/amp.js
  */
 
-use crate::synth::effects::filter::Filter;
 use std::f64::consts::FRAC_1_SQRT_2;
+use crate::synth::effects::filter::Filter;
 
 mod wave_shaper;
 use wave_shaper::{ WaveShaper, WaveShaperCurveFactory };
@@ -34,10 +34,10 @@ pub struct GuitarAmpSimulator {
     presence_filter: Filter,
     presence_freq: f64,
 
-    high_cut_filter: Filter,
-    high_cut_freq: f64,
-    low_cut_filter: Filter,
-    low_cut_freq: f64,
+    cut1_filter: Filter,
+    cut1_freq: f64,
+    cut2_filter: Filter,
+    cut2_freq: f64,
 
     master_gain: f64
 }
@@ -47,10 +47,10 @@ impl GuitarAmpSimulator {
         let input_gain = 1.0;
 
         let mut low_shelf1 = Filter::new(sample_rate);
-        low_shelf1.low_shelf(720.0, 1.0, -6.0);
+        low_shelf1.low_shelf(720.0, FRAC_1_SQRT_2, -6.0);
 
         let mut low_shelf2 = Filter::new(sample_rate);
-        low_shelf2.low_shelf(320.0, 1.0, -5.0);
+        low_shelf2.low_shelf(320.0, FRAC_1_SQRT_2, -5.0);
 
         let preamp_1_gain = 1.0;
         
@@ -63,7 +63,7 @@ impl GuitarAmpSimulator {
         high_pass1.high_pass(6.0, FRAC_1_SQRT_2);
     
         let mut low_shelf3 = Filter::new(sample_rate);
-        low_shelf3.low_shelf(720.0, 1.0, -6.0);
+        low_shelf3.low_shelf(720.0, FRAC_1_SQRT_2, -6.0);
 
         let preamp_2_gain = 1.0;
 
@@ -74,28 +74,28 @@ impl GuitarAmpSimulator {
 
         let mut bass_filter = Filter::new(sample_rate);
         let bass_freq = 100.0;
-        bass_filter.low_shelf(bass_freq, FRAC_1_SQRT_2, -8.0);
+        bass_filter.low_shelf(bass_freq, FRAC_1_SQRT_2, 0.0);
 
         let mut mid_filter = Filter::new(sample_rate);
         let mid_freq = 1700.0;
-        mid_filter.peaking(mid_freq, 1.0, 0.0);
+        mid_filter.peaking(mid_freq, 1.0, -10.0);
 
         let mut treble_filter = Filter::new(sample_rate);
-        let treble_freq = 6500.0;
+        let treble_freq = 7500.0;
         treble_filter.high_shelf(treble_freq, FRAC_1_SQRT_2, -40.0);
 
         let mut presence_filter = Filter::new(sample_rate);
-        let presence_freq = 3900.0;
-        presence_filter.peaking(presence_freq, 1.0, 6.0);
+        let presence_freq = 3200.0;
+        presence_filter.peaking(presence_freq, 1.0, 16.0);
 
         // 얘네 둘은 필요하면 활성화할 예정
-        let mut high_cut_filter = Filter::new(sample_rate);
-        let high_cut_freq = 18000.0;
-        high_cut_filter.peaking(high_cut_freq, 1.0, 0.0); //-25.0);
+        let mut cut1_filter = Filter::new(sample_rate);
+        let cut1_freq = 10000.0;
+        cut1_filter.peaking(cut1_freq, 0.1, 0.0);
 
-        let mut low_cut_filter = Filter::new(sample_rate);
-        let low_cut_freq = 60.0;
-        low_cut_filter.peaking(low_cut_freq, 1.0, 0.0); //19.0);
+        let mut cut2_filter = Filter::new(sample_rate);
+        let cut2_freq = 17500.0;
+        cut2_filter.peaking(cut2_freq, 1.0, -20.0);
 
         let master_gain = 1.0;
 
@@ -123,11 +123,11 @@ impl GuitarAmpSimulator {
             treble_freq,
             presence_filter,
             presence_freq,
-            
-            high_cut_filter,
-            high_cut_freq,
-            low_cut_filter,
-            low_cut_freq,
+
+            cut1_filter,
+            cut1_freq,
+            cut2_filter,
+            cut2_freq,
 
             master_gain
         };
@@ -161,14 +161,14 @@ impl GuitarAmpSimulator {
 
     pub fn process(&mut self, buf: &mut [f64]) {
         for src in buf.iter_mut() {
-            (*src) *= self.input_gain;
+            *src *= self.input_gain;
         }
 
         self.low_shelf1.process(buf);
         self.low_shelf2.process(buf);
 
         for src in buf.iter_mut() {
-            (*src) *= self.preamp_1_gain;
+            *src *= self.preamp_1_gain;
         }
 
         self.wave_shaper1.process(buf);
@@ -176,12 +176,12 @@ impl GuitarAmpSimulator {
         
         self.low_shelf3.process(buf);
         for src in buf.iter_mut() {
-            (*src) *= self.preamp_2_gain;
+            *src *= self.preamp_2_gain;
         }
     
         self.wave_shaper2.process(buf);
         for src in buf.iter_mut() {
-            (*src) *= self.output_gain;
+            *src *= self.output_gain;
         }
     
         self.bass_filter.process(buf);
@@ -189,11 +189,11 @@ impl GuitarAmpSimulator {
         self.treble_filter.process(buf);
         self.presence_filter.process(buf);
 
-        self.high_cut_filter.process(buf);
-        self.low_cut_filter.process(buf);
+        self.cut1_filter.process(buf);
+        self.cut2_filter.process(buf);
 
         for src in buf.iter_mut() {
-            (*src) *= self.master_gain;
+            *src *= self.master_gain;
         }
     }
 }
